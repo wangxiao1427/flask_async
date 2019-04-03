@@ -45,9 +45,8 @@
 * ab压力测试  
   官方文档[http://httpd.apache.org/docs/current/programs/ab.html]  
 
-  使用
+  使用 `ab -n 1000 -c 100 "http://127.0.0.1:5001/cast/10"`
   ```
-    λ ab -n 1000 -c 100 "http://127.0.0.1:5001/cast/10"                   
     Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/   
     Licensed to The Apache Software Foundation, http://www.apache.org/         
                                                                               
@@ -108,7 +107,7 @@
   ```
 
   结果分析:  
-    ```
+  ```
     Concurrency Level:      100                                                # 100个客户端
     Time taken for tests:   111.167 seconds                                    # 总耗时
     Complete requests:      1000                                               # 完成请求数
@@ -116,4 +115,30 @@
     Requests per second:    9.00 [#/sec] (mean)                                # 每秒请求数
     Time per request:       11116.725 [ms] (mean)                              # 每个请求耗时(平均)
     Time per request:       111.167 [ms] (mean, across all concurrent requests)
-    ```
+  ```
+  可以看出每次接口中延迟10s，在100个客户端总共发出1000个请求时，总耗时111s，不同客户端之间是异步执行。  
+  每秒请求数9个，优于同步阻塞io的请求数。  
+
+  再换成`ab -n 10000 -c 100 "http://127.0.0.1:5001/cast/2"`做验证    
+  ```
+    Concurrency Level:      100
+    Time taken for tests:   204.471 seconds
+    Complete requests:      10000
+    Failed requests:        0
+    Total transferred:      1610000 bytes
+    HTML transferred:       20000 bytes
+    Requests per second:    48.91 [#/sec] (mean)
+    Time per request:       2044.714 [ms] (mean)
+    Time per request:       20.447 [ms] (mean, across all concurrent requests)
+    Transfer rate:          7.69 [Kbytes/sec] received
+  ```
+
+* 不同接口之间异步测试
+  按顺序分别使用  
+  A: `http://127.0.0.1:5001/cast/10`  
+  B: `http://127.0.0.1:5001/other_cast/2`  
+
+  调用接口后，A先进入sleep，在第2秒时B接口执行完成，之后第10秒A执行完成。  
+  说明AB接口之间是相互独立的。
+
+  

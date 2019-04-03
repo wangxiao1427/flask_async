@@ -12,4 +12,4 @@ WORKDIR /app/
 RUN pip install -r requirements.txt
 
 EXPOSE 5001
-CMD gunicorn -w 9 -b 0.0.0.0:5001 -k gevent run:app
+CMD gunicorn -w 9 --threads 3  -b 0.0.0.0:5001 -k gevent run:app
